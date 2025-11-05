@@ -1,62 +1,81 @@
-function getComputerChoice(){
-    let result=Math.floor(Math.random()*3);
-    if(result==0){
-        return "rock";
-    }
-    else if(result==1){
-        return "scissor";
-    }
-    else{
-        return "paper";
-    }
+let playerScore = 0;
+let computerScore = 0;
+let roundsToWin = 0;
+let gameActive = false;
+
+const resultsDiv = document.getElementById('results');
+const buttonsDiv = document.getElementById('buttons');
+const startBtn = document.getElementById('start');
+const roundsInput = document.getElementById('rounds');
+const buttons = document.querySelectorAll('#buttons button');
+
+startBtn.addEventListener('click', startGame);
+
+function startGame() {
+  roundsToWin = parseInt(roundsInput.value);
+  if (isNaN(roundsToWin) || roundsToWin <= 0) {
+    alert('Please enter a valid number of rounds.');
+    return;
+  }
+
+  playerScore = 0;
+  computerScore = 0;
+  gameActive = true;
+  resultsDiv.textContent = '';
+  buttonsDiv.style.display = 'block';
+  updateResults('Game started! Make your choice.');
 }
-function getHumanChoice(){
-    let user=prompt("Rock, Paper or Scissor? : ");
-    return user;
-}
-function getRounds(){
-    let rounds=prompt("Enter number of Rounds : ");
-    return parseInt(rounds);
-}
-function playGame(){
-    let humanScore=0;
-    let computerScore=0;
-    const rounds=getRounds();
-    function playRound(humanChoice,computerChoice){
-        humanChoice=humanChoice.toLowerCase();
-        computerChoice=computerChoice.toLowerCase();
-        if(humanChoice==computerChoice){
-            console.log( "Draw!");
-        }
-        else if(humanChoice=="rock"&&computerChoice=="scissor"||humanChoice=="paper"&&computerChoice=="rock"||humanChoice=="scissor"&&computerChoice=="paper"){
-        humanScore++;
-        console.log( `You Win! ${humanChoice} beats ${computerChoice}`);
-        }
-        else{
-            computerScore++;
-            console.log( `You Lose :( ${computerChoice} beats ${humanChoice}`);
-        }
-        console.log(`Score -> You: ${humanScore} | Computer: ${computerScore}`);
+
+buttons.forEach(button => {
+  button.addEventListener('click', () => {
+    if (gameActive) {
+      playRound(button.id, computerPlay());
     }
-    for(let i=0;i<rounds;i++){
-        console.log(`Round ${i + 1}`);
-        const humanSelection = getHumanChoice();
-        const computerSelection = getComputerChoice();
-        playRound(humanSelection, computerSelection);
-    }
-    if (humanScore > computerScore) {
-        console.log("You are the overall winner!");
-    } else if (computerScore > humanScore) {
-        console.log("Computer is the overall winner!");
-    } else {
-        console.log("The game is a tie!");
-    }
+  });
+});
+
+function computerPlay() {
+  const choices = ['rock', 'paper', 'scissors'];
+  return choices[Math.floor(Math.random() * choices.length)];
 }
-playGame();
 
+function playRound(playerSelection, computerSelection) {
+  let result = '';
 
-    
+  if (playerSelection === computerSelection) {
+    result = `It's a tie! You both chose ${playerSelection}.`;
+  } else if (
+    (playerSelection === 'rock' && computerSelection === 'scissors') ||
+    (playerSelection === 'paper' && computerSelection === 'rock') ||
+    (playerSelection === 'scissors' && computerSelection === 'paper')
+  ) {
+    playerScore++;
+    result = `You win this round! ${playerSelection} beats ${computerSelection}.`;
+  } else {
+    computerScore++;
+    result = `You lose this round! ${computerSelection} beats ${playerSelection}.`;
+  }
 
+  updateResults(result);
 
+  if (playerScore === roundsToWin || computerScore === roundsToWin) {
+    declareWinner();
+  }
+}
 
+function updateResults(roundResult) {
+  resultsDiv.innerHTML = `
+    <p>${roundResult}</p>
+    <p>Score — You: ${playerScore} | Computer: ${computerScore}</p>
+  `;
+}
 
+function declareWinner() {
+  gameActive = false;
+  let finalMessage =
+    playerScore === roundsToWin
+      ? '<strong>You won the game! 🎉</strong>'
+      : '<strong>Computer wins the game! 🤖</strong>';
+
+  resultsDiv.innerHTML += `<p>${finalMessage}</p>`;
+}
